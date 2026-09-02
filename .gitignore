@@ -1,0 +1,10 @@
+node_modules/
+frontend/node_modules/
+backend/.venv/
+backend/venv/
+*.pyc
+__pycache__/
+.pytest_cache/
+.DS_Store
+.env
+backend/model/random_forest_pipeline.pkl
