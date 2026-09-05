@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const airlineOptions = ['AirAsia', 'Air_India', 'GO_FIRST', 'Indigo', 'SpiceJet', 'Vistara'];
 const cityOptions = ['Bangalore', 'Chennai', 'Delhi', 'Hyderabad', 'Kolkata', 'Mumbai'];
@@ -15,6 +15,7 @@ const stopOptions = [
   { label: '2+ Stops', value: 'two_or_more' },
 ];
 const classOptions = ['Economy', 'Business'];
+const plannerFields = new Set(['flight', 'month', 'holiday', 'trip_purpose']);
 
 const initialForm = {
   airline: '',
@@ -57,13 +58,12 @@ function App() {
     }
   }, [chatOpen]);
 
-  const isValidForm = useMemo(() => {
-    return Object.values(form).every((value) => value !== '' && value !== null && value !== undefined);
-  }, [form]);
-
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+    if (result && plannerFields.has(name)) {
+      setTripContext((current) => ({ ...current, [name]: value || null }));
+    }
     setErrors((current) => ({ ...current, [name]: '' }));
     setServerError('');
   };
@@ -301,11 +301,6 @@ function App() {
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Flight</label>
-                    <input name="flight" value={form.flight} onChange={handleChange} placeholder="Optional flight code" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
-                  </div>
-
-                  <div>
                     <label className="mb-2 block text-sm font-medium text-slate-700">Source City</label>
                     <select name="source_city" value={form.source_city} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                       <option value="">Select source city</option>
@@ -369,36 +364,6 @@ function App() {
                       ))}
                     </select>
                     {errors.class && <p className="mt-1 text-sm text-red-600">{errors.class}</p>}
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Month</label>
-                    <select name="month" value={form.month} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                      <option value="">Select month</option>
-                      {monthOptions.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Holiday</label>
-                    <select name="holiday" value={form.holiday} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                      <option value="">Select holiday</option>
-                      {holidayOptions.map((item) => (
-                        <option key={item.value} value={item.value}>{item.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Trip Purpose</label>
-                    <select name="trip_purpose" value={form.trip_purpose} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                      <option value="">Select purpose</option>
-                      {tripPurposeOptions.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </select>
                   </div>
 
                   <div>
@@ -490,6 +455,53 @@ function App() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-[28px] border border-brand-100 bg-brand-50/50 p-6 shadow-soft md:p-8">
+            <div className="mb-6 max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">Trip planner</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Add context for your trip</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Optional details help the AI assistant tailor travel tips, packing ideas, and destination suggestions. They are not required for the price estimate.
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Flight code</label>
+                <input name="flight" value={form.flight} onChange={handleChange} placeholder="Optional flight code" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Travel month</label>
+                <select name="month" value={form.month} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                  <option value="">Select month</option>
+                  {monthOptions.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Public holiday?</label>
+                <select name="holiday" value={form.holiday} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                  <option value="">Select option</option>
+                  {holidayOptions.map((item) => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Trip purpose</label>
+                <select name="trip_purpose" value={form.trip_purpose} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                  <option value="">Select purpose</option>
+                  {tripPurposeOptions.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>
